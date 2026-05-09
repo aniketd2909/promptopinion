@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PromptOpinion — AI Clinical Scribe</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>PromptOpinion</h1>
+      <p class="tagline">AI clinical scribe — record, structure, and diagnose</p>
+    </header>
+
+    <main>
+      <section class="card" id="patient-section">
+        <h2>1. Select patient</h2>
+        <div class="row">
+          <input
+            id="patient-search"
+            type="text"
+            placeholder="Search by name or id…"
+            autocomplete="off"
+          />
+          <button id="patient-search-btn">Search</button>
+        </div>
+        <ul id="patient-results" class="patient-list"></ul>
+        <div id="selected-patient" class="selected hidden">
+          <strong>Selected:</strong> <span id="selected-patient-label"></span>
+          <button class="link" id="clear-patient">change</button>
+        </div>
+      </section>
+
+      <section class="card" id="capture-section">
+        <h2>2. Capture conversation</h2>
+        <div class="capture-tabs">
+          <button class="tab active" data-tab="record">🎙 Record</button>
+          <button class="tab" data-tab="upload">📁 Upload</button>
+          <button class="tab" data-tab="text">⌨ Paste transcript</button>
+        </div>
+
+        <div class="tab-pane active" id="tab-record">
+          <div class="row">
+            <button id="rec-start">Start recording</button>
+            <button id="rec-stop" disabled>Stop</button>
+            <span id="rec-status" class="muted">idle</span>
+          </div>
+          <audio id="rec-playback" controls class="hidden"></audio>
+        </div>
+
+        <div class="tab-pane" id="tab-upload">
+          <input type="file" id="audio-file" accept="audio/*" />
+        </div>
+
+        <div class="tab-pane" id="tab-text">
+          <textarea
+            id="transcript-input"
+            rows="6"
+            placeholder="Paste a doctor-patient transcript here…"
+          ></textarea>
+        </div>
+
+        <div class="row">
+          <button id="run-pipeline" class="primary">Run pipeline →</button>
+          <span id="pipeline-status" class="muted"></span>
+        </div>
+      </section>
+
+      <section class="card hidden" id="results-section">
+        <h2>3. Review &amp; edit</h2>
+
+        <details open>
+          <summary>Transcript</summary>
+          <pre id="result-transcript" class="pre"></pre>
+        </details>
+
+        <details open>
+          <summary>Structured FHIR payload</summary>
+          <textarea id="result-structured" rows="18" spellcheck="false"></textarea>
+          <p class="muted small">
+            Edit anything that's wrong. This JSON gets translated to real FHIR
+            resources on approval.
+          </p>
+        </details>
+
+        <details open>
+          <summary>Diagnosis suggestion</summary>
+          <div id="result-diagnosis"></div>
+        </details>
+
+        <details>
+          <summary>MCP tool calls (debug)</summary>
+          <pre id="result-tool-calls" class="pre small"></pre>
+        </details>
+
+        <div class="row">
+          <button id="approve-btn" class="primary">Approve &amp; save to FHIR</button>
+          <span id="approve-status" class="muted"></span>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <small>
+        Models: Whisper · GPT-4o · Claude Opus 4.7 · MCP for patient history ·
+        LangGraph orchestration
+      </small>
+    </footer>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

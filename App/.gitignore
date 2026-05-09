@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Env
+.env
+.env.local
+
+# Local FHIR JSON store (regenerated from sample-patient.json on first run)
+backend/data/patients_store.json

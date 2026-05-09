@@ -1,0 +1,46 @@
+# Python virtual environment
+.venv/
+venv/
+env/
+
+# Compiled bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy / type checkers
+.mypy_cache/
+.dmypy.json
+.pyright/
+
+# Ruff / linting
+.ruff_cache/
+
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Data files (local FHIR store, if regenerated)
+backend/data/patients_store.json

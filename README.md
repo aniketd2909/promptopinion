@@ -8,11 +8,11 @@ encounter back to FHIR.
 The project ships **two publishable artifacts** that share a small clinical
 helper library:
 
-| | What | Path | Run on |
-|---|---|---|---|
-| 🟦 | **MCP server** (publish to Marketplace) | [mcp_app/](mcp_app/) | port 8010 |
-| 🟪 | **A2A agent** (publish to Marketplace) | [a2a_app/](a2a_app/) | port 8020 |
-| ⚙️  | Shared FHIR helpers (schemas, bundle assembly, structuring agent) | [shared/](shared/) | imported |
+|     | What                                                              | Path                 | Run on    |
+| --- | ----------------------------------------------------------------- | -------------------- | --------- |
+| 🟦  | **MCP server** (publish to Marketplace)                           | [mcp_app/](mcp_app/) | port 8010 |
+| 🟪  | **A2A agent** (publish to Marketplace)                            | [a2a_app/](a2a_app/) | port 8020 |
+| ⚙️  | Shared FHIR helpers (schemas, bundle assembly, structuring agent) | [shared/](shared/)   | imported  |
 
 In production the MCP server and A2A agent run on their own infrastructure and
 the platform injects FHIR context per request.
@@ -60,11 +60,11 @@ the platform injects FHIR context per request.
 
 ## Models
 
-| Step | Model | Why |
-|---|---|---|
-| Text → FHIR | OpenAI GPT-4o | Strong native structured-output mode |
-| Diagnosis | Anthropic Claude Opus 4.7 | Strongest medical reasoning |
-| A2A agent runtime | LiteLLM-prefixed (default Gemini 2.5 Flash; OpenAI/Anthropic also supported) | ADK convention |
+| Step              | Model                                                                        | Why                                  |
+| ----------------- | ---------------------------------------------------------------------------- | ------------------------------------ |
+| Text → FHIR       | OpenAI GPT-4o                                                                | Strong native structured-output mode |
+| Diagnosis         | Anthropic Claude Opus 4.7                                                    | Strongest medical reasoning          |
+| A2A agent runtime | LiteLLM-prefixed (default Gemini 2.5 Flash; OpenAI/Anthropic also supported) | ADK convention                       |
 
 ## Setup
 
@@ -162,11 +162,11 @@ the `a2a_app/shared/` files are forked from there and behave identically.
 
 ### MCP server (HTTP headers — per request)
 
-| Header | Required | Purpose |
-|---|---|---|
-| `x-fhir-server-url` | yes | FHIR R4 base URL |
-| `x-fhir-access-token` | yes | Bearer token (also parsed for `patient` JWT claim) |
-| `x-patient-id` | optional | Active patient id (fallback if not in JWT) |
+| Header                | Required | Purpose                                            |
+| --------------------- | -------- | -------------------------------------------------- |
+| `x-fhir-server-url`   | yes      | FHIR R4 base URL                                   |
+| `x-fhir-access-token` | yes      | Bearer token (also parsed for `patient` JWT claim) |
+| `x-patient-id`        | optional | Active patient id (fallback if not in JWT)         |
 
 Capability advertisement on `initialize`:
 
@@ -192,18 +192,19 @@ Capability advertisement on `initialize`:
       "messageId": "...",
       "metadata": {
         "https://your-workspace.promptopinion.ai/schemas/a2a/v1/fhir-context": {
-          "fhirUrl":   "https://workspace.fhir.example/r4",
+          "fhirUrl": "https://workspace.fhir.example/r4",
           "fhirToken": "<bearer>",
-          "patientId": "patient-uuid"
-        }
+          "patientId": "patient-uuid",
+        },
       },
-      "parts": [{"kind": "text", "text": "..."}]
-    }
-  }
+      "parts": [{ "kind": "text", "text": "..." }],
+    },
+  },
 }
 ```
 
 Headers:
+
 - `X-API-Key: <one of API_KEYS or API_KEY_*>`
 
 The agent card declares the FHIR-context extension URI and the SMART scopes

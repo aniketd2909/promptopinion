@@ -10,6 +10,9 @@ endpoints require an X-API-Key header (configure via API_KEYS / API_KEY_PRIMARY)
 
 import os
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from a2a.types import AgentSkill
 
 from a2a_app.shared.app_factory import create_a2a_app

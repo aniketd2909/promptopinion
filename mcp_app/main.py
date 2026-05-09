@@ -8,6 +8,9 @@ The Prompt Opinion platform connects to this URL, sends FHIR context as
 HTTP headers on each tool call, and invokes the registered MCP tools.
 """
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI

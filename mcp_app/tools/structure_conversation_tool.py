@@ -26,10 +26,10 @@ async def structure_clinical_conversation(
         ),
     ] = None,
 ) -> str:
-    if not os.getenv("OPENAI_API_KEY"):
+    if not os.getenv("GOOGLE_API_KEY"):
         raise ValueError(
-            "OPENAI_API_KEY is not configured for the MCP server. The "
-            "structuring tool needs OpenAI access."
+            "GOOGLE_API_KEY is not configured for the MCP server. The "
+            "structuring tool needs Google AI access."
         )
     if not transcript or not transcript.strip():
         raise ValueError("Transcript is empty.")

@@ -1,9 +1,9 @@
-"""SuggestDiagnosis — Claude Opus 4.7 differential / next-steps with FHIR history.
+"""SuggestDiagnosis — Gemini differential / next-steps with FHIR history.
 
 When called as an MCP tool by the platform LLM, this tool *itself* fetches the
 patient's FHIR history (using the inbound MCP context) and pre-loads it into
-Claude's prompt. We do not run a nested Claude tool-use loop here — the
-platform LLM is the orchestrator.
+the model's prompt. We do not run a nested tool-use loop here — the platform
+LLM is the orchestrator.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ import json
 import os
 from typing import Annotated, Any, Dict, Optional
 
-import anthropic
+import litellm
 from mcp.server.fastmcp import Context
 from pydantic import Field
 
@@ -51,21 +51,6 @@ Rules:
 - `summary` is one paragraph the physician can read in 10 seconds.
 - Do NOT prescribe — recommend evaluations, referrals, follow-up tests.
 """
-
-
-_anthropic_client: Optional[anthropic.Anthropic] = None
-
-
-def _get_anthropic() -> anthropic.Anthropic:
-    global _anthropic_client
-    if _anthropic_client is None:
-        api_key = os.getenv("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise ValueError(
-                "ANTHROPIC_API_KEY is not configured for the MCP server."
-            )
-        _anthropic_client = anthropic.Anthropic(api_key=api_key)
-    return _anthropic_client
 
 
 async def suggest_diagnosis(
@@ -117,13 +102,15 @@ async def suggest_diagnosis(
         f"Prior FHIR history:\n{json.dumps(history_summary, indent=2) if history_summary else '(none)'}"
     )
 
-    response = _get_anthropic().messages.create(
-        model=os.getenv("DIAGNOSIS_MODEL", "claude-opus-4-7"),
-        max_tokens=2048,
-        system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": user_msg}],
+    response = litellm.completion(
+        model=os.getenv("DIAGNOSIS_MODEL", "gemini/gemini-3.1-flash-lite"),
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_msg},
+        ],
+        api_key=os.getenv("GOOGLE_API_KEY"),
     )
-    text = "".join(b.text for b in response.content if b.type == "text").strip()
+    text = response.choices[0].message.content.strip()
 
     if text.startswith("```"):
         text = text.strip("`")

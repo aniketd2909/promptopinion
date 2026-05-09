@@ -1,8 +1,8 @@
 """Structuring agent — turns a transcript into a FHIR-shaped payload.
 
-GPT-4o (or whatever ``STRUCTURING_MODEL`` is set to) with the OpenAI
-structured-output mode (Pydantic schema) gives us a strict, validated object
-back. Downstream code translates that into real FHIR resources via
+Uses Google Gemini (via langchain-google-genai) with structured-output mode
+(Pydantic schema) to produce a strict, validated object. Downstream code
+translates that into real FHIR resources via
 :func:`shared.fhir.bundle.build_resources_from_payload`.
 """
 
@@ -12,7 +12,7 @@ import os
 from typing import Optional
 
 from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from shared.fhir.schemas import StructuredEncounterPayload
 
@@ -44,15 +44,15 @@ def structure_transcript(
     transcript: str,
     additional_context: Optional[str] = None,
 ) -> StructuredEncounterPayload:
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
         raise RuntimeError(
-            "OPENAI_API_KEY is not set. The structurer needs OpenAI access."
+            "GOOGLE_API_KEY is not set. The structurer needs Google AI access."
         )
 
-    llm = ChatOpenAI(
-        model=os.getenv("STRUCTURING_MODEL", "gpt-4o-2024-11-20"),
-        api_key=api_key,
+    llm = ChatGoogleGenerativeAI(
+        model=os.getenv("STRUCTURING_MODEL", "gemini-3.1-flash-lite"),
+        google_api_key=api_key,
         temperature=0.1,
     ).with_structured_output(StructuredEncounterPayload)
 

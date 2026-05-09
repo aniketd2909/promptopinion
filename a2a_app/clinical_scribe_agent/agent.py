@@ -35,7 +35,7 @@ from a2a_app.shared.tools import (
 
 _model_name = os.getenv(
     "CLINICAL_SCRIBE_AGENT_MODEL",
-    os.getenv("HEALTHCARE_AGENT_MODEL", "gemini/gemini-2.5-flash"),
+    os.getenv("HEALTHCARE_AGENT_MODEL", "gemini/gemini-3.1-flash-lite"),
 )
 _model = LiteLlm(model=_model_name)
 

@@ -16,7 +16,7 @@ import anthropic
 from mcp.server.fastmcp import Context
 from pydantic import Field
 
-from backend.fhir.schemas import DiagnosisSuggestion, StructuredEncounterPayload
+from shared.fhir.schemas import DiagnosisSuggestion, StructuredEncounterPayload
 from mcp_app.fhir_client import FhirClient
 from mcp_app.fhir_context import get_fhir_context, get_patient_id_if_context_exists
 from mcp_app.tools.patient_history_tool import _RESOURCE_TYPES, _summarize

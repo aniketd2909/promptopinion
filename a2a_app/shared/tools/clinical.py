@@ -1,7 +1,7 @@
 """Clinical-scribe tools: structure transcript, suggest diagnosis, commit encounter.
 
-These wrap the existing pipeline modules in `backend.agents` and expose them
-as ADK tools that read FHIR context from session state.
+These wrap the shared structuring + FHIR-bundle helpers and expose them as
+ADK tools that read FHIR context from session state.
 """
 
 from __future__ import annotations
@@ -13,9 +13,9 @@ from typing import Any, Dict
 import httpx
 from google.adk.tools import ToolContext
 
-from backend.agents.fhir_structurer import structure_transcript
-from backend.fhir.schemas import StructuredEncounterPayload
-from backend.fhir.store import build_resources_from_payload
+from shared.agents.structurer import structure_transcript
+from shared.fhir.bundle import build_resources_from_payload
+from shared.fhir.schemas import StructuredEncounterPayload
 
 
 logger = logging.getLogger(__name__)

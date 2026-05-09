@@ -1,19 +1,20 @@
 """Structuring agent — turns a transcript into a FHIR-shaped payload.
 
-GPT-4o with the OpenAI structured-output mode (Pydantic schema) gives us a
-strict, validated object back. We translate that into real FHIR resources
-later in :mod:`backend.fhir.store`.
+GPT-4o (or whatever ``STRUCTURING_MODEL`` is set to) with the OpenAI
+structured-output mode (Pydantic schema) gives us a strict, validated object
+back. Downstream code translates that into real FHIR resources via
+:func:`shared.fhir.bundle.build_resources_from_payload`.
 """
 
 from __future__ import annotations
 
+import os
 from typing import Optional
 
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 
-from backend.config import get_settings
-from backend.fhir.schemas import StructuredEncounterPayload
+from shared.fhir.schemas import StructuredEncounterPayload
 
 
 SYSTEM_PROMPT = """\
@@ -43,15 +44,15 @@ def structure_transcript(
     transcript: str,
     additional_context: Optional[str] = None,
 ) -> StructuredEncounterPayload:
-    settings = get_settings()
-    if not settings.openai_api_key:
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
         raise RuntimeError(
-            "OPENAI_API_KEY is not set. Add it to App/.env to enable structuring."
+            "OPENAI_API_KEY is not set. The structurer needs OpenAI access."
         )
 
     llm = ChatOpenAI(
-        model=settings.structuring_model,
-        api_key=settings.openai_api_key,
+        model=os.getenv("STRUCTURING_MODEL", "gpt-4o-2024-11-20"),
+        api_key=api_key,
         temperature=0.1,
     ).with_structured_output(StructuredEncounterPayload)
 
@@ -65,7 +66,6 @@ def structure_transcript(
             HumanMessage(content="\n".join(user_parts)),
         ]
     )
-    # `with_structured_output` returns the Pydantic instance directly.
     if isinstance(result, StructuredEncounterPayload):
         return result
     return StructuredEncounterPayload.model_validate(result)

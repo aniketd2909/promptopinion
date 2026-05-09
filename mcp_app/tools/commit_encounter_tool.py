@@ -12,8 +12,8 @@ from typing import Annotated, Optional
 from mcp.server.fastmcp import Context
 from pydantic import Field
 
-from backend.fhir.schemas import StructuredEncounterPayload
-from backend.fhir.store import build_resources_from_payload
+from shared.fhir.bundle import build_resources_from_payload
+from shared.fhir.schemas import StructuredEncounterPayload
 from mcp_app.fhir_client import FhirClient
 from mcp_app.fhir_context import get_fhir_context, get_patient_id_if_context_exists
 

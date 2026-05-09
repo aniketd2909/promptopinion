@@ -1,22 +1,21 @@
 # PromptOpinion Clinical Scribe
 
-A clinical-scribe AI for the Prompt Opinion platform. Records the
-doctor-patient conversation, structures it into FHIR resources, fetches the
-patient's prior history, suggests diagnostic next steps, and writes the
-doctor-approved encounter back to FHIR.
+A clinical-scribe AI for the Prompt Opinion platform. Structures a
+doctor-patient conversation into FHIR resources, fetches the patient's prior
+history, suggests diagnostic next steps, and writes the doctor-approved
+encounter back to FHIR.
 
-The project ships **two publishable artifacts** plus a **local dev harness**:
+The project ships **two publishable artifacts** that share a small clinical
+helper library:
 
 | | What | Path | Run on |
 |---|---|---|---|
 | 🟦 | **MCP server** (publish to Marketplace) | [mcp_app/](mcp_app/) | port 8010 |
 | 🟪 | **A2A agent** (publish to Marketplace) | [a2a_app/](a2a_app/) | port 8020 |
-| 🟩 | **Local dev harness** (FastAPI + HTML, FHIR passthrough) | [backend/](backend/) + [frontend/](frontend/) | port 8000 |
+| ⚙️  | Shared FHIR helpers (schemas, bundle assembly, structuring agent) | [shared/](shared/) | imported |
 
-In production the MCP server and A2A agent run on their own infrastructure,
-the platform injects FHIR context per request, and the dev harness disappears.
-In local development everything points at the dev harness's
-`/fhir/*` passthrough so you can test without a real FHIR server.
+In production the MCP server and A2A agent run on their own infrastructure and
+the platform injects FHIR context per request.
 
 ## Architecture
 
@@ -48,14 +47,14 @@ In local development everything points at the dev harness's
                     │   + scopes     │  │                      │
                     └───────┬────────┘  └─────────┬────────────┘
                             │                     │
+                            │  shared/ (schemas, bundle, structurer)
+                            │                     │
                             └──────────┬──────────┘
                                        │
                                        ▼  HTTP FHIR R4
                           ┌──────────────────────────────┐
                           │       FHIR R4 server         │
-                          │ prod: PromptOpinion workspace│
-                          │ dev:  http://localhost:8000  │
-                          │       /fhir/* (passthrough)  │
+                          │  PromptOpinion workspace     │
                           └──────────────────────────────┘
 ```
 
@@ -63,7 +62,6 @@ In local development everything points at the dev harness's
 
 | Step | Model | Why |
 |---|---|---|
-| Voice → text | OpenAI Whisper (`whisper-1`) | Best-in-class accented / medical STT |
 | Text → FHIR | OpenAI GPT-4o | Strong native structured-output mode |
 | Diagnosis | Anthropic Claude Opus 4.7 | Strongest medical reasoning |
 | A2A agent runtime | LiteLLM-prefixed (default Gemini 2.5 Flash; OpenAI/Anthropic also supported) | ADK convention |
@@ -71,7 +69,6 @@ In local development everything points at the dev harness's
 ## Setup
 
 ```bash
-cd App
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -81,40 +78,35 @@ cp .env.example .env
 # PO_PLATFORM_BASE_URL (your Prompt Opinion workspace URL)
 ```
 
-## Run all three locally
-
-Open three terminals (each with the venv activated):
+## Run locally
 
 ```bash
-# Terminal 1 — dev harness with FHIR passthrough at /fhir/*
-python -m backend.main
-# → http://localhost:8000
-
-# Terminal 2 — MCP server
+# Terminal 1 — MCP server
 uvicorn mcp_app.main:app --host 0.0.0.0 --port 8010
 
-# Terminal 3 — A2A agent
+# Terminal 2 — A2A agent
 uvicorn a2a_app.clinical_scribe_agent.app:a2a_app --host 0.0.0.0 --port 8020
 ```
 
 Verify each:
 
 ```bash
-curl http://localhost:8000/api/health
-curl http://localhost:8000/fhir/Patient?given=Edward          # 13 patients seeded
 curl http://localhost:8020/.well-known/agent-card.json        # A2A card
 ```
 
-Test the MCP server end-to-end (uses the dev FHIR passthrough as the FHIR server):
+Test the MCP server end-to-end against any FHIR R4 server:
 
 ```bash
 python <<'PY'
-import asyncio
+import asyncio, os
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 
 async def main():
-    headers = {"x-fhir-server-url": "http://127.0.0.1:8000/fhir"}
+    headers = {
+        "x-fhir-server-url": os.environ["FHIR_BASE_URL"],
+        "x-fhir-access-token": os.environ["FHIR_ACCESS_TOKEN"],
+    }
     async with streamablehttp_client("http://127.0.0.1:8010/mcp", headers=headers) as (r, w, _):
         async with ClientSession(r, w) as s:
             await s.initialize()
@@ -122,7 +114,7 @@ async def main():
             print([t.name for t in tools.tools])
             res = await s.call_tool(
                 "FindPatient",
-                {"firstName": "Edward499", "lastName": "Balistreri607"},
+                {"firstName": "Edward", "lastName": "Balistreri"},
             )
             print(res.content[0].text)
 
@@ -136,7 +128,6 @@ PY
 
 1. **Deploy** with a public URL (Cloud Run, Fly, Render, Railway):
    ```bash
-   # The Dockerfile-style command:
    uvicorn mcp_app.main:app --host 0.0.0.0 --port 8010
    ```
 2. **Register** on the Prompt Opinion Marketplace by giving it the URL of
@@ -221,23 +212,12 @@ it requires. The platform handles credential plumbing.
 ## Project layout
 
 ```
-App/
-├── backend/              local dev harness (FastAPI + HTML UI)
-│   ├── main.py           routes /api/* + /fhir/* + serves the HTML
-│   ├── routes/
-│   │   ├── patients.py
-│   │   ├── encounters.py
-│   │   └── dev_fhir.py   FHIR-shaped passthrough at /fhir/*
-│   ├── agents/           Whisper + GPT-4o + Claude + LangGraph
-│   └── fhir/             local JSON store + bundle assembly
-│
-├── frontend/             single-page HTML/JS UI for local dev
-│
-├── mcp_app/              ★ publishable: MCP server (SHARP-on-MCP)
-│   ├── main.py           streamable-http entry point
-│   ├── mcp_instance.py   FastMCP + capability advertisement
-│   ├── fhir_client.py    bearer-token httpx client
-│   ├── fhir_context.py   resolves x-fhir-* headers
+.
+├── mcp_app/                ★ publishable: MCP server (SHARP-on-MCP)
+│   ├── main.py             streamable-http entry point
+│   ├── mcp_instance.py     FastMCP + capability advertisement
+│   ├── fhir_client.py      bearer-token httpx client
+│   ├── fhir_context.py     resolves x-fhir-* headers
 │   └── tools/
 │       ├── find_patient_tool.py
 │       ├── patient_history_tool.py
@@ -245,13 +225,24 @@ App/
 │       ├── suggest_diagnosis_tool.py
 │       └── commit_encounter_tool.py
 │
-└── a2a_app/              ★ publishable: A2A agent (Google ADK + a2a-sdk v1)
-    ├── shared/           app_factory, fhir_hook, middleware (forked from po-adk-python)
-    │   └── tools/        FHIR query + clinical scribe tools
-    └── clinical_scribe_agent/
-        ├── agent.py      ADK Agent w/ before_model_callback = extract_fhir_context
-        └── app.py        create_a2a_app(...) — agent card, scopes, skills
+├── a2a_app/                ★ publishable: A2A agent (Google ADK + a2a-sdk v1)
+│   ├── shared/             app_factory, fhir_hook, middleware (forked from po-adk-python)
+│   │   └── tools/          FHIR query + clinical scribe tools
+│   └── clinical_scribe_agent/
+│       ├── agent.py        ADK Agent w/ before_model_callback = extract_fhir_context
+│       └── app.py          create_a2a_app(...) — agent card, scopes, skills
+│
+└── shared/                 cross-app helpers imported by both publishable apps
+    ├── fhir/
+    │   ├── schemas.py      Pydantic StructuredEncounterPayload, DiagnosisSuggestion
+    │   └── bundle.py       build_resources_from_payload (payload → FHIR R4 resources)
+    └── agents/
+        └── structurer.py   structure_transcript (GPT-4o structured output)
 ```
+
+> Note: `shared/` (top-level) and `a2a_app/shared/` are unrelated. The former
+> holds cross-app clinical helpers we own; the latter is the per-agent ADK
+> scaffolding forked from po-adk-python.
 
 ## Reference implementations
 

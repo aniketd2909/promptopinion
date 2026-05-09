@@ -8,7 +8,7 @@ from typing import Annotated, Optional
 
 from pydantic import Field
 
-from backend.agents.fhir_structurer import structure_transcript
+from shared.agents.structurer import structure_transcript
 
 
 async def structure_clinical_conversation(

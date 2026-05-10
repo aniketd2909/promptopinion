@@ -55,12 +55,6 @@ async def commit_encounter(
         raise ValueError("No patient id provided and no patient context found.")
 
     fhir_context = get_fhir_context(ctx)
-    if not fhir_context:
-        raise ValueError(
-            "No FHIR context found. The platform must send the "
-            "x-fhir-server-url and x-fhir-access-token headers."
-        )
-
     resources = build_resources_from_payload(
         patient_id=patientId,
         payload=payload,

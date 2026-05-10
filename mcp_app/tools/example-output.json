@@ -1,0 +1,40 @@
+{
+  "summary": "The patient presents with a 3-day history of sore throat, worsening with swallowing and localized to the left side, accompanied by fever (101.8 F). Patient reports mild nasal congestion but denies cough, nausea, vomiting, or rash. Notable exposure to strep throat from family member last week.",
+  "assessment": ["Pharyngitis", "Fever"],
+  "differential": [
+    "Streptococcal pharyngitis (high suspicion due to exposure)",
+    "Viral pharyngitis",
+    "Peritonsillar abscess (due to unilateral pain and odynophagia)"
+  ],
+  "section_title": "Encounter Review: Pharyngitis",
+  "chief_complaint": "Sore throat and fever",
+  "key_observations": [
+    "3-day duration of sore throat",
+    "Fever of 101.8 F reported last night",
+    "Odynophagia, primarily left-sided",
+    "Mild congestion; denies cough",
+    "Recent household contact with strep throat",
+    "Partial relief with Tylenol"
+  ],
+  "doctor_action_options": [
+    "Physical exam (throat/tonsils)",
+    "Rapid Strep Test",
+    "Culture if rapid test is negative",
+    "Empiric antibiotics if indicated"
+  ],
+  "recommended_next_steps": [
+    "Perform physical examination of pharynx and tonsils for exudates, erythema, or asymmetry",
+    "Perform rapid streptococcal antigen test",
+    "Consider throat culture if rapid test is negative",
+    "Assess for signs of peritonsillar abscess if indicated by exam"
+  ],
+  "relevant_prior_history": [
+    "No prior history available in record for this patient."
+  ],
+  "missing_or_uncertain_details": [
+    "Presence of tonsillar exudate or hypertrophy",
+    "Presence of palatal petechiae",
+    "Presence of cervical lymphadenopathy",
+    "Current physical examination findings"
+  ]
+}

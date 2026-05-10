@@ -81,20 +81,19 @@ async def suggest_diagnosis(
     history_summary: Dict[str, Any] = {}
     if patientId:
         fhir_context = get_fhir_context(ctx)
-        if fhir_context:
-            fhir_client = FhirClient(
-                base_url=fhir_context.url, token=fhir_context.token
+        fhir_client = FhirClient(
+            base_url=fhir_context.url, token=fhir_context.token
+        )
+        for rt, search_param in _RESOURCE_TYPES:
+            bundle = await fhir_client.search(
+                rt, {search_param: f"Patient/{patientId}"}
             )
-            for rt, search_param in _RESOURCE_TYPES:
-                bundle = await fhir_client.search(
-                    rt, {search_param: f"Patient/{patientId}"}
-                )
-                if bundle and bundle.get("entry"):
-                    resources = [
-                        e["resource"] for e in bundle["entry"] if e.get("resource")
-                    ]
-                    if resources:
-                        history_summary[rt] = [_summarize(r) for r in resources]
+            if bundle and bundle.get("entry"):
+                resources = [
+                    e["resource"] for e in bundle["entry"] if e.get("resource")
+                ]
+                if resources:
+                    history_summary[rt] = [_summarize(r) for r in resources]
 
     user_msg = (
         f"patient_id: {patientId or '[not provided]'}\n\n"

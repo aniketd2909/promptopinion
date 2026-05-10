@@ -20,8 +20,10 @@ class FhirClient:
     def _build_url(self, path: str) -> str:
         return f"{self.base_url}/{path.lstrip('/')}"
 
-    def _headers(self) -> Dict[str, str]:
+    def _headers(self, content_type: bool = False) -> Dict[str, str]:
         headers = {"Accept": "application/fhir+json"}
+        if content_type:
+            headers["Content-Type"] = "application/fhir+json"
         if self.token:
             headers["Authorization"] = f"Bearer {self.token}"
         return headers
@@ -50,11 +52,38 @@ class FhirClient:
             r.raise_for_status()
             return r.json()
 
+    async def create(
+        self, resource_type: str, resource: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            r = await client.post(
+                self._build_url(resource_type),
+                headers=self._headers(content_type=True),
+                json=resource,
+            )
+            r.raise_for_status()
+            return r.json()
+
+    async def update(
+        self,
+        resource_type: str,
+        resource_id: str,
+        resource: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            r = await client.put(
+                self._build_url(f"{resource_type}/{resource_id}"),
+                headers=self._headers(content_type=True),
+                json=resource,
+            )
+            r.raise_for_status()
+            return r.json()
+
     async def post_bundle(self, bundle: Dict[str, Any]) -> Dict[str, Any]:
         async with httpx.AsyncClient(timeout=30.0) as client:
             r = await client.post(
                 self._build_url(""),
-                headers={**self._headers(), "Content-Type": "application/fhir+json"},
+                headers=self._headers(content_type=True),
                 json=bundle,
             )
             r.raise_for_status()

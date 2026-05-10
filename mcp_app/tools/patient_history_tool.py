@@ -38,12 +38,6 @@ async def get_patient_history(
         )
 
     fhir_context = get_fhir_context(ctx)
-    if not fhir_context:
-        raise ValueError(
-            "No FHIR context found. The platform must send the "
-            "x-fhir-server-url and x-fhir-access-token headers."
-        )
-
     fhir_client = FhirClient(base_url=fhir_context.url, token=fhir_context.token)
 
     grouped: Dict[str, List[Dict[str, Any]]] = {}

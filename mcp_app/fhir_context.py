@@ -1,15 +1,22 @@
 """Resolve FHIR context from the inbound MCP HTTP request.
 
-The Prompt Opinion platform sends FHIR credentials as HTTP headers on every
-streamable-HTTP MCP request:
+In production, the Prompt Opinion platform sends FHIR credentials as HTTP
+headers on every streamable-HTTP MCP request:
 
     x-fhir-server-url:    https://workspace.promptopinion.ai/api/.../fhir
     x-fhir-access-token:  <bearer token>
     x-patient-id:         <patient uuid>             (optional — may be in JWT)
+
+For local development (e.g. against the public HAPI test server), the headers
+are typically absent. We then fall back to environment variables:
+
+    FHIR_BASE_URL     — defaults to https://hapi.fhir.org/baseR4
+    FHIR_ACCESS_TOKEN — optional; HAPI public has no auth
 """
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import Optional
 
@@ -23,18 +30,30 @@ from mcp_app.mcp_constants import (
 )
 
 
+DEFAULT_FHIR_BASE_URL = "https://hapi.fhir.org/baseR4"
+
+
 @dataclass
 class FhirContext:
     url: str
     token: Optional[str] = None
 
 
-def get_fhir_context(ctx: Context) -> Optional[FhirContext]:
+def get_fhir_context(ctx: Context) -> FhirContext:
+    """Resolve FHIR base URL + bearer token from headers, falling back to env vars.
+
+    Always returns a FhirContext — falls back to FHIR_BASE_URL (or HAPI public)
+    when no header is present, so local dev works without platform-injected
+    credentials.
+    """
     req = ctx.request_context.request
-    url = req.headers.get(FHIR_SERVER_URL_HEADER)
-    if not url:
-        return None
-    return FhirContext(url=url, token=req.headers.get(FHIR_ACCESS_TOKEN_HEADER))
+    url = req.headers.get(FHIR_SERVER_URL_HEADER) or os.getenv(
+        "FHIR_BASE_URL", DEFAULT_FHIR_BASE_URL
+    )
+    token = req.headers.get(FHIR_ACCESS_TOKEN_HEADER) or os.getenv(
+        "FHIR_ACCESS_TOKEN"
+    )
+    return FhirContext(url=url, token=token)
 
 
 def get_patient_id_if_context_exists(ctx: Context) -> Optional[str]:

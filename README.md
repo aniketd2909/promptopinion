@@ -12,7 +12,7 @@ appointments.
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#1a1a1a','primaryBorderColor':'#1f6feb','lineColor':'#333333','secondaryColor':'#f6f8fa','tertiaryColor':'#ffffff','clusterBkg':'#fafafa','clusterBorder':'#cccccc','edgeLabelBackground':'#ffffff'}}}%%
 flowchart LR
-    Doctor([Doctor])
+    Doctor([Doctor+Patient])
     LLM[Prompt Opinion<br/>Platform LLM]
 
     subgraph Server["MCP Server (mcp_app/)"]
@@ -32,27 +32,27 @@ flowchart LR
 
 ## Tools
 
-| Category | Tool | Description |
-| --- | --- | --- |
-| **Read** | `FindPatient` | Search by first/last name |
-| | `GetPatient` | Demographics by id |
-| | `GetPatientHistory` | Full clinical bundle |
-| | `GetActiveConditions` | Active problem list |
-| | `GetMedications` | Active medications |
-| | `GetAllergies` | Allergy list |
-| | `GetRecentObservations` | Vitals + labs (filter by category) |
-| | `GetEncounterHistory` | Past visits |
-| | `GetImmunizations` | Vaccination history |
-| **AI** | `StructureClinicalConversation` | Transcript → FHIR-shaped payload (Gemini) |
-| | `StructureAudioConversation` | Audio URL → transcript (Gemini multimodal) → FHIR-shaped payload |
-| | `SuggestDiagnosis` | Differential + next steps from history |
-| **Write** | `CreatePatient` | Register a new patient |
-| | `UpdatePatientDemographics` | Edit name / DOB / contacts |
-| | `RecordObservation` | Add a vital or lab value |
-| | `AddCondition` | Add to problem list |
-| | `AddAllergy` | Record allergy / intolerance |
-| | `ScheduleAppointment` | Book a future visit |
-| | `CommitEncounter` | Persist approved visit as transaction Bundle |
+| Category  | Tool                            | Description                                                      |
+| --------- | ------------------------------- | ---------------------------------------------------------------- |
+| **Read**  | `FindPatient`                   | Search by first/last name                                        |
+|           | `GetPatient`                    | Demographics by id                                               |
+|           | `GetPatientHistory`             | Full clinical bundle                                             |
+|           | `GetActiveConditions`           | Active problem list                                              |
+|           | `GetMedications`                | Active medications                                               |
+|           | `GetAllergies`                  | Allergy list                                                     |
+|           | `GetRecentObservations`         | Vitals + labs (filter by category)                               |
+|           | `GetEncounterHistory`           | Past visits                                                      |
+|           | `GetImmunizations`              | Vaccination history                                              |
+| **AI**    | `StructureClinicalConversation` | Transcript → FHIR-shaped payload (Gemini)                        |
+|           | `StructureAudioConversation`    | Audio URL → transcript (Gemini multimodal) → FHIR-shaped payload |
+|           | `SuggestDiagnosis`              | Differential + next steps from history                           |
+| **Write** | `CreatePatient`                 | Register a new patient                                           |
+|           | `UpdatePatientDemographics`     | Edit name / DOB / contacts                                       |
+|           | `RecordObservation`             | Add a vital or lab value                                         |
+|           | `AddCondition`                  | Add to problem list                                              |
+|           | `AddAllergy`                    | Record allergy / intolerance                                     |
+|           | `ScheduleAppointment`           | Book a future visit                                              |
+|           | `CommitEncounter`               | Persist approved visit as transaction Bundle                     |
 
 ## FHIR backend
 
@@ -75,11 +75,11 @@ A single Gemini model is shared by all three AI agents, called through the
 JSON-structured-output mode (`response_schema`); the transcription agent uses
 the multimodal text path with an inline audio Part.
 
-| Step | Agent | Mode |
-| --- | --- | --- |
-| Audio → transcript | `shared/agents/transcriber.py` | Multimodal (audio in, text out) |
-| Transcript → FHIR-shaped JSON | `shared/agents/structurer.py` | Structured output (`StructuredEncounterPayload`) |
-| Encounter + history → differential | `shared/agents/diagnoser.py` | Structured output (`DiagnosisSuggestion`) |
+| Step                               | Agent                          | Mode                                             |
+| ---------------------------------- | ------------------------------ | ------------------------------------------------ |
+| Audio → transcript                 | `shared/agents/transcriber.py` | Multimodal (audio in, text out)                  |
+| Transcript → FHIR-shaped JSON      | `shared/agents/structurer.py`  | Structured output (`StructuredEncounterPayload`) |
+| Encounter + history → differential | `shared/agents/diagnoser.py`   | Structured output (`DiagnosisSuggestion`)        |
 
 Default model is `gemini-2.5-flash`; override with the `GEMINI_MODEL` env var
 (e.g. `gemini-2.5-pro` for higher quality, `gemini-2.5-flash-lite` for
@@ -144,11 +144,11 @@ PY
 
 ### Per-request HTTP headers
 
-| Header                | Required | Purpose                                            |
-| --------------------- | -------- | -------------------------------------------------- |
-| `x-fhir-server-url`   | platform-provided | FHIR R4 base URL                          |
+| Header                | Required          | Purpose                                            |
+| --------------------- | ----------------- | -------------------------------------------------- |
+| `x-fhir-server-url`   | platform-provided | FHIR R4 base URL                                   |
 | `x-fhir-access-token` | platform-provided | Bearer token (also parsed for `patient` JWT claim) |
-| `x-patient-id`        | optional | Active patient id (fallback if not in JWT)         |
+| `x-patient-id`        | optional          | Active patient id (fallback if not in JWT)         |
 
 In local dev these are all absent, and the server falls back to
 `FHIR_BASE_URL` / `FHIR_ACCESS_TOKEN` from `.env`.
@@ -160,22 +160,22 @@ In local dev these are all absent, and the server falls back to
   "extensions": {
     "ai.promptopinion/fhir-context": {
       "scopes": [
-        {"name": "patient/Patient.rs", "required": true},
-        {"name": "patient/Encounter.rs", "required": true},
-        {"name": "patient/Condition.rs", "required": true},
-        {"name": "patient/Observation.rs", "required": true},
-        {"name": "patient/MedicationStatement.rs"},
-        {"name": "patient/MedicationRequest.rs"},
-        {"name": "patient/AllergyIntolerance.rs"},
-        {"name": "patient/Immunization.rs"},
-        {"name": "patient/Appointment.rs"},
-        {"name": "patient/Patient.cu"},
-        {"name": "patient/Encounter.cu"},
-        {"name": "patient/Observation.cu"},
-        {"name": "patient/Condition.cu"},
-        {"name": "patient/AllergyIntolerance.cu"},
-        {"name": "patient/Appointment.cu"},
-        {"name": "patient/ClinicalImpression.cu"}
+        { "name": "patient/Patient.rs", "required": true },
+        { "name": "patient/Encounter.rs", "required": true },
+        { "name": "patient/Condition.rs", "required": true },
+        { "name": "patient/Observation.rs", "required": true },
+        { "name": "patient/MedicationStatement.rs" },
+        { "name": "patient/MedicationRequest.rs" },
+        { "name": "patient/AllergyIntolerance.rs" },
+        { "name": "patient/Immunization.rs" },
+        { "name": "patient/Appointment.rs" },
+        { "name": "patient/Patient.cu" },
+        { "name": "patient/Encounter.cu" },
+        { "name": "patient/Observation.cu" },
+        { "name": "patient/Condition.cu" },
+        { "name": "patient/AllergyIntolerance.cu" },
+        { "name": "patient/Appointment.cu" },
+        { "name": "patient/ClinicalImpression.cu" }
       ]
     }
   }

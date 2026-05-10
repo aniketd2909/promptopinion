@@ -10,6 +10,7 @@ appointments.
 ## Architecture
 
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryTextColor':'#1a1a1a','primaryBorderColor':'#1f6feb','lineColor':'#333333','secondaryColor':'#f6f8fa','tertiaryColor':'#ffffff','clusterBkg':'#fafafa','clusterBorder':'#cccccc','edgeLabelBackground':'#ffffff'}}}%%
 flowchart LR
     Doctor([Doctor])
     LLM[Prompt Opinion<br/>Platform LLM]

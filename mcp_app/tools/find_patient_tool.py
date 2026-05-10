@@ -75,7 +75,7 @@ async def find_patient(
 
     fhir_context = get_fhir_context(ctx)
     fhir_client = FhirClient(base_url=fhir_context.url, token=fhir_context.token)
-
+    print(f"FindPatient: searching for patient with name={name} firstName={firstName} ")
     params: Dict[str, str] = {}
     if name:
         params["name"] = name

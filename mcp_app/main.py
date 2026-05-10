@@ -16,13 +16,17 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from mcp_app.http import close_http_client
 from mcp_app.mcp_instance import mcp
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with mcp.session_manager.run():
-        yield
+        try:
+            yield
+        finally:
+            await close_http_client()
 
 
 app = FastAPI(

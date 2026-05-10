@@ -1,19 +1,17 @@
 """Structuring agent — turns a transcript into a FHIR-shaped payload.
 
-Uses Google Gemini (via langchain-google-genai) with structured-output mode
-(Pydantic schema) to produce a strict, validated object. Downstream code
-translates that into real FHIR resources via
+Uses the shared Google Gemini client (:mod:`mcp_app.llm`) with structured
+output: the model is forced to emit JSON matching the
+:class:`StructuredEncounterPayload` schema, which is then validated. Downstream
+code translates the validated payload into real FHIR resources via
 :func:`shared.fhir.bundle.build_resources_from_payload`.
 """
 
 from __future__ import annotations
 
-import os
 from typing import Optional
 
-from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
-
+from mcp_app.llm import structured_completion
 from shared.fhir.schemas import StructuredEncounterPayload
 
 
@@ -39,33 +37,20 @@ Rules:
 - Never set `patient_id` — the orchestrator fills that in.
 """
 
-
-def structure_transcript(
+async def structure_transcript(
     transcript: str,
     additional_context: Optional[str] = None,
 ) -> StructuredEncounterPayload:
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "GOOGLE_API_KEY is not set. The structurer needs Google AI access."
-        )
+    transcript = transcript.strip()
+    if not transcript:
+        raise ValueError("Transcript is empty.")
 
-    llm = ChatGoogleGenerativeAI(
-        model=os.getenv("STRUCTURING_MODEL", "gemini-3.1-flash-lite"),
-        google_api_key=api_key,
-        temperature=0.1,
-    ).with_structured_output(StructuredEncounterPayload)
-
-    user_parts = [f"Transcript:\n\n{transcript.strip()}"]
-    if additional_context:
+    user_parts = [f"Transcript:\n\n{transcript}"]
+    if additional_context and additional_context.strip():
         user_parts.append(f"\n\nAdditional context:\n{additional_context.strip()}")
 
-    result = llm.invoke(
-        [
-            SystemMessage(content=SYSTEM_PROMPT),
-            HumanMessage(content="\n".join(user_parts)),
-        ]
+    return await structured_completion(
+        system=SYSTEM_PROMPT,
+        user="\n".join(user_parts),
+        schema=StructuredEncounterPayload,
     )
-    if isinstance(result, StructuredEncounterPayload):
-        return result
-    return StructuredEncounterPayload.model_validate(result)

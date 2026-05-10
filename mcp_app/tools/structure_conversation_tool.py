@@ -1,9 +1,7 @@
-"""StructureClinicalConversation — transcript -> FHIR-shaped JSON via GPT-4o."""
+"""StructureClinicalConversation — transcript -> FHIR-shaped JSON via Gemini."""
 
 from __future__ import annotations
 
-import json
-import os
 from typing import Annotated, Optional
 
 from pydantic import Field
@@ -26,16 +24,11 @@ async def structure_clinical_conversation(
         ),
     ] = None,
 ) -> str:
-    if not os.getenv("GOOGLE_API_KEY"):
-        raise ValueError(
-            "GOOGLE_API_KEY is not configured for the MCP server. The "
-            "structuring tool needs Google AI access."
-        )
     if not transcript or not transcript.strip():
         raise ValueError("Transcript is empty.")
 
-    payload = structure_transcript(
+    payload = await structure_transcript(
         transcript=transcript,
         additional_context=additionalContext,
     )
-    return json.dumps(payload.model_dump(), indent=2)
+    return payload.model_dump_json(indent=2)

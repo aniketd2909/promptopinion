@@ -5,16 +5,12 @@ pydantic>=2.10.4
 python-dotenv>=1.0.1
 httpx>=0.28.1
 
-# --- LLM SDK ---
-google-generativeai>=0.8.0
+# --- Resilience ---
+tenacity>=9.0.0
 
-# --- Structuring agent (transcript -> StructuredEncounterPayload) ---
-langchain-core>=0.3.30,<0.4
-langchain-google-genai>=2.0.0
+# --- LLM SDK (Google Gemini) ---
+google-genai>=1.0.0
 
-# --- MCP server (po-community-mcp pattern) ---
+# --- MCP server ---
 mcp>=1.9.0
 PyJWT>=2.10.0
-
-# --- Diagnosis suggestion ---
-litellm>=1.83.7

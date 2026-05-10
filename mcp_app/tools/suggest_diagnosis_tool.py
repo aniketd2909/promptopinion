@@ -3,23 +3,24 @@
 When called as an MCP tool by the platform LLM, this tool *itself* fetches the
 patient's FHIR history (using the inbound MCP context) and pre-loads it into
 the model's prompt. We do not run a nested tool-use loop here — the platform
-LLM is the orchestrator.
+LLM is the orchestrator. The diagnosis itself is produced via Gemini's native
+structured-output mode, so the response is already validated as a
+:class:`DiagnosisSuggestion` before it returns to the caller.
 """
 
 from __future__ import annotations
 
 import json
-import os
 from typing import Annotated, Any, Dict, Optional
 
-import litellm
 from mcp.server.fastmcp import Context
 from pydantic import Field
 
-from shared.fhir.schemas import DiagnosisSuggestion, StructuredEncounterPayload
 from mcp_app.fhir_client import FhirClient
 from mcp_app.fhir_context import get_fhir_context, get_patient_id_if_context_exists
+from mcp_app.llm import structured_completion
 from mcp_app.tools.patient_history_tool import _RESOURCE_TYPES, _summarize
+from shared.fhir.schemas import DiagnosisSuggestion, StructuredEncounterPayload
 
 
 SYSTEM_PROMPT = """\
@@ -30,18 +31,7 @@ You are a clinical decision-support assistant. You will receive:
 2. The patient's prior FHIR history (encounters, conditions, observations,
    medications, allergies, prior clinical impressions).
 
-Produce a single JSON object — no prose, no code fences — matching exactly:
-
-{
-  "differential": [string, ...],
-  "recommended_next_steps": [
-    {"title": string, "rationale": string, "priority": "urgent"|"routine"|"optional"},
-    ...
-  ],
-  "red_flags": [string, ...],
-  "history_signals_used": [string, ...],
-  "summary": string
-}
+Produce a JSON object matching the DiagnosisSuggestion schema you've been given.
 
 Rules:
 - `differential` is ranked most-likely first.
@@ -70,7 +60,11 @@ async def suggest_diagnosis(
     ctx: Context = None,
 ) -> str:
     try:
-        encounter_dict = json.loads(structuredEncounter) if isinstance(structuredEncounter, str) else structuredEncounter
+        encounter_dict = (
+            json.loads(structuredEncounter)
+            if isinstance(structuredEncounter, str)
+            else structuredEncounter
+        )
     except json.JSONDecodeError as exc:
         raise ValueError(f"structuredEncounter is not valid JSON: {exc}") from exc
     payload = StructuredEncounterPayload.model_validate(encounter_dict)
@@ -98,28 +92,13 @@ async def suggest_diagnosis(
     user_msg = (
         f"patient_id: {patientId or '[not provided]'}\n\n"
         f"Today's visit (structured):\n{payload.model_dump_json(indent=2)}\n\n"
-        f"Prior FHIR history:\n{json.dumps(history_summary, indent=2) if history_summary else '(none)'}"
+        f"Prior FHIR history:\n"
+        f"{json.dumps(history_summary, indent=2) if history_summary else '(none)'}"
     )
 
-    response = litellm.completion(
-        model=os.getenv("DIAGNOSIS_MODEL", "gemini/gemini-3.1-flash-lite"),
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_msg},
-        ],
-        api_key=os.getenv("GOOGLE_API_KEY"),
+    suggestion = await structured_completion(
+        system=SYSTEM_PROMPT,
+        user=user_msg,
+        schema=DiagnosisSuggestion,
     )
-    text = response.choices[0].message.content.strip()
-
-    if text.startswith("```"):
-        text = text.strip("`")
-        if text.lower().startswith("json"):
-            text = text[4:]
-        text = text.strip()
-    start = text.find("{")
-    end = text.rfind("}")
-    if start == -1 or end == -1:
-        raise ValueError(f"Diagnosis model did not return JSON: {text!r}")
-    parsed = json.loads(text[start : end + 1])
-    suggestion = DiagnosisSuggestion.model_validate(parsed)
     return suggestion.model_dump_json(indent=2)

@@ -26,6 +26,7 @@ from mcp_app.tools.patient_history_tool import get_patient_history
 from mcp_app.tools.recent_observations_tool import get_recent_observations
 from mcp_app.tools.record_observation_tool import record_observation
 from mcp_app.tools.schedule_appointment_tool import schedule_appointment
+from mcp_app.tools.structure_audio_conversation_tool import structure_audio_conversation
 from mcp_app.tools.structure_conversation_tool import structure_clinical_conversation
 from mcp_app.tools.suggest_diagnosis_tool import suggest_diagnosis
 from mcp_app.tools.update_patient_tool import update_patient_demographics
@@ -167,6 +168,19 @@ mcp.tool(
         "medications, allergies) ready for FHIR persistence."
     ),
 )(structure_clinical_conversation)
+
+mcp.tool(
+    name="StructureAudioConversation",
+    description=(
+        "Download a recorded doctor-patient conversation from an http(s) URL, "
+        "transcribe it with the audio transcription agent, and convert the "
+        "transcript to a structured clinical payload (chief complaint, vitals, "
+        "conditions, medications, allergies) ready for FHIR persistence. Use "
+        "when the user provides an audio URL instead of a typed transcript. "
+        "Supported formats: mp3, wav, ogg, flac, aac, m4a, aiff, webm "
+        "(max ~20 MB)."
+    ),
+)(structure_audio_conversation)
 
 mcp.tool(
     name="SuggestDiagnosis",

@@ -19,7 +19,7 @@ import asyncio
 import json
 import logging
 import os
-from typing import Optional, Type, TypeVar
+from typing import Any, List, Optional, Type, TypeVar
 
 from google import genai
 from google.genai import errors as genai_errors
@@ -153,3 +153,49 @@ async def structured_completion(
         raise LLMResponseError(
             f"Gemini response did not match {schema.__name__}: {exc}"
         ) from exc
+
+
+@retry(
+    stop=stop_after_attempt(MAX_RETRY_ATTEMPTS),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception(_is_retryable),
+    reraise=True,
+)
+async def text_completion(
+    *,
+    system: str,
+    contents: List[Any],
+    temperature: float = DEFAULT_TEMPERATURE,
+    timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
+) -> str:
+    """Plain-text completion with arbitrary (multi-modal) content parts.
+
+    Mirrors :func:`structured_completion` but returns plain text rather than
+    a validated Pydantic instance. Use when the input mixes text with binary
+    Parts (audio, images) and the desired output is unstructured text — for
+    example, audio transcription.
+    """
+    client = _get_client()
+    model = _get_model()
+
+    config = genai_types.GenerateContentConfig(
+        system_instruction=system,
+        temperature=temperature,
+    )
+
+    response = await asyncio.wait_for(
+        client.aio.models.generate_content(
+            model=model,
+            contents=contents,
+            config=config,
+        ),
+        timeout=timeout_seconds,
+    )
+
+    text = getattr(response, "text", None)
+    if not text or not text.strip():
+        raise LLMResponseError(
+            f"Gemini returned no content (finish_reason="
+            f"{_extract_finish_reason(response)}, model={model})."
+        )
+    return text.strip()

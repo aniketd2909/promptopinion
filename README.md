@@ -24,7 +24,7 @@ appointments.
                             │                │
                             │  Tools:        │
                             │  • Read (9)    │
-                            │  • AI (2)      │
+                            │  • AI (3)      │
                             │  • Write (7)   │
                             │                │
                             │  Capability:   │
@@ -34,7 +34,7 @@ appointments.
                             │   + scopes     │
                             └────────┬───────┘
                                      │
-                            shared/ (schemas, bundle, structurer)
+                            shared/ (schemas, bundle, agents)
                                      │
                                      ▼  HTTP FHIR R4
                           ┌──────────────────────────────┐
@@ -57,6 +57,7 @@ appointments.
 | | `GetEncounterHistory` | Past visits |
 | | `GetImmunizations` | Vaccination history |
 | **AI** | `StructureClinicalConversation` | Transcript → FHIR-shaped payload (Gemini) |
+| | `StructureAudioConversation` | Audio URL → transcript (Gemini multimodal) → FHIR-shaped payload |
 | | `SuggestDiagnosis` | Differential + next steps from history |
 | **Write** | `CreatePatient` | Register a new patient |
 | | `UpdatePatientDemographics` | Edit name / DOB / contacts |
@@ -82,12 +83,20 @@ is connected to.
 
 ## Models
 
-| Step | Model | Why |
-| --- | --- | --- |
-| Text → FHIR | `gemini-3.1-flash-lite` (via langchain-google-genai) | Structured-output mode, fast |
-| Diagnosis | `gemini/gemini-3.1-flash-lite` (via LiteLLM) | Same model, JSON output |
+A single Gemini model is shared by all three AI agents, called through the
+`google-genai` SDK. The structuring and diagnosis agents use Gemini's native
+JSON-structured-output mode (`response_schema`); the transcription agent uses
+the multimodal text path with an inline audio Part.
 
-Both are overridable via `STRUCTURING_MODEL` and `DIAGNOSIS_MODEL` env vars.
+| Step | Agent | Mode |
+| --- | --- | --- |
+| Audio → transcript | `shared/agents/transcriber.py` | Multimodal (audio in, text out) |
+| Transcript → FHIR-shaped JSON | `shared/agents/structurer.py` | Structured output (`StructuredEncounterPayload`) |
+| Encounter + history → differential | `shared/agents/diagnoser.py` | Structured output (`DiagnosisSuggestion`) |
+
+Default model is `gemini-2.5-flash`; override with the `GEMINI_MODEL` env var
+(e.g. `gemini-2.5-pro` for higher quality, `gemini-2.5-flash-lite` for
+cheaper/faster).
 
 ## Setup
 
@@ -196,14 +205,18 @@ In local dev these are all absent, and the server falls back to
 │   ├── mcp_constants.py    SHARP header / extension keys
 │   ├── fhir_client.py      bearer-token httpx client (read/search/create/update/bundle)
 │   ├── fhir_context.py     resolves x-fhir-* headers w/ env-var fallback
-│   └── tools/              one MCP tool per file (18 total)
+│   ├── http.py             shared httpx.AsyncClient (connection pooling)
+│   ├── llm.py              Gemini client + structured_completion / text_completion
+│   └── tools/              one MCP tool per file (19 total)
 │
 └── shared/                 cross-cutting helpers
     ├── fhir/
     │   ├── schemas.py      Pydantic StructuredEncounterPayload, DiagnosisSuggestion
     │   └── bundle.py       build_resources_from_payload (payload → FHIR R4 resources)
     └── agents/
-        └── structurer.py   structure_transcript (Gemini structured output)
+        ├── transcriber.py  transcribe_audio (Gemini multimodal, audio → text)
+        ├── structurer.py   structure_transcript (transcript → StructuredEncounterPayload)
+        └── diagnoser.py    suggest_diagnosis_for_encounter (encounter + history → DiagnosisSuggestion)
 ```
 
 ## Reference implementations

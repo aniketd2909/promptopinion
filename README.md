@@ -9,38 +9,63 @@ appointments.
 
 ## Architecture
 
-```
-                          Prompt Opinion platform LLM
-                                     │
-                                     │ HTTP + SHARP headers
-                                     │   x-fhir-server-url
-                                     │   x-fhir-access-token
-                                     │   x-patient-id
-                                     ▼
-                            ┌────────────────┐
-                            │   MCP server   │
-                            │   mcp_app/     │
-                            │   port 8010    │
-                            │                │
-                            │  Tools:        │
-                            │  • Read (9)    │
-                            │  • AI (3)      │
-                            │  • Write (7)   │
-                            │                │
-                            │  Capability:   │
-                            │   ai.prompt    │
-                            │   opinion/     │
-                            │   fhir-context │
-                            │   + scopes     │
-                            └────────┬───────┘
-                                     │
-                            shared/ (schemas, bundle, agents)
-                                     │
-                                     ▼  HTTP FHIR R4
-                          ┌──────────────────────────────┐
-                          │       FHIR R4 server         │
-                          │  (HAPI public / your EHR)    │
-                          └──────────────────────────────┘
+```mermaid
+flowchart TD
+    User([Doctor / Workspace user])
+    Platform[Prompt Opinion Platform LLM<br/>orchestrator]
+    Gemini[(Google Gemini API<br/>gemini-2.5-flash)]
+    FHIR[(FHIR R4 server<br/>HAPI public / EHR)]
+
+    User -->|"transcript • audio URL • patient query"| Platform
+    Platform -->|"Streamable HTTP /mcp<br/>+ SHARP headers<br/>(x-fhir-server-url,<br/> x-fhir-access-token,<br/> x-patient-id)"| Inst
+
+    subgraph MCP["mcp_app/ — MCP server (FastAPI, :8010)"]
+        direction TB
+        Inst["mcp_instance.py<br/>FastMCP + capability advertisement<br/>+ tool registration"]
+        Ctx["fhir_context.py<br/>resolves x-fhir-* headers / JWT claims"]
+        LLMmod["llm.py<br/>structured_completion · text_completion"]
+        Client["fhir_client.py<br/>bearer-token httpx client"]
+
+        ReadT["Read tools · 9<br/>FindPatient · GetPatient ·<br/>GetPatientHistory ·<br/>GetActiveConditions · GetMedications ·<br/>GetAllergies · GetRecentObservations ·<br/>GetEncounterHistory · GetImmunizations"]
+        AIT["AI tools · 3<br/>StructureAudioConversation<br/>StructureClinicalConversation<br/>SuggestDiagnosis"]
+        WriteT["Write tools · 7<br/>CreatePatient · UpdatePatientDemographics ·<br/>RecordObservation · AddCondition ·<br/>AddAllergy · ScheduleAppointment ·<br/>CommitEncounter"]
+
+        Inst --> ReadT
+        Inst --> AIT
+        Inst --> WriteT
+        Inst -.uses.-> Ctx
+    end
+
+    subgraph Shared["shared/"]
+        direction TB
+        Tr["agents/transcriber.py<br/>audio bytes → transcript"]
+        St["agents/structurer.py<br/>transcript → StructuredEncounterPayload"]
+        Dx["agents/diagnoser.py<br/>encounter + history → DiagnosisSuggestion"]
+        Sch["fhir/schemas.py<br/>Pydantic models"]
+        Bd["fhir/bundle.py<br/>payload → FHIR R4 transaction Bundle"]
+    end
+
+    AIT -- "audio path" --> Tr
+    Tr -- "transcript" --> St
+    AIT -- "text path" --> St
+    AIT -- "diagnosis" --> Dx
+    AIT -. "SuggestDiagnosis: fetch history" .-> Client
+
+    WriteT -- "CommitEncounter" --> Bd
+
+    St --> Sch
+    Dx --> Sch
+    Bd --> Sch
+
+    Tr --> LLMmod
+    St --> LLMmod
+    Dx --> LLMmod
+
+    ReadT --> Client
+    WriteT --> Client
+
+    LLMmod -->|HTTPS| Gemini
+    Client -->|"FHIR R4 / HTTPS<br/>(per-request bearer token)"| FHIR
 ```
 
 ## Tools

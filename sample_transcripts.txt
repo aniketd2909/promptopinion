@@ -1,0 +1,140 @@
+1. Sore Throat / Possible Strep
+
+Doctor: Hey, good morning. What's been going on?
+Patient: Uh yeah so my throat's been killing me for like, I guess, three days now.
+Doctor: Three days, okay.
+Patient: Yeah and then last night I started feeling, like, really hot. I checked and it was 101 point 8.
+Doctor: Got it. Any cough? Runny nose?
+Patient: Not really a cough. Maybe a little stuffed up, but not like a full cold or anything.
+Doctor: Any trouble swallowing?
+Patient: Yeah, it hurts, mostly on this side, the left side. Even water kinda hurts.
+Doctor: Any nausea, vomiting, rash?
+Patient: No, none of that.
+Doctor: Anybody around you sick?
+Patient: My kid had strep last week, so that's why my wife was like you probably need to get checked.
+Doctor: Makes sense. Any medication allergies?
+Patient: Nope.
+Doctor: What have you taken so far?
+Patient: Tylenol, cough drops, warm tea, the usual. Helps for like an hour and then it's back.
+Doctor: Okay. Let me take a look at your throat and we'll probably do a rapid strep test.
+Patient: Okay.
+
+------------------------------------------------------------
+
+2. Diabetes Follow-Up With Poor Control
+
+Doctor: Hi, how've you been since the last visit?
+Patient: Honestly, not great with the sugars.
+Doctor: Tell me more.
+Patient: In the mornings they're still high. Like 180, 190, sometimes over 200 if I eat bad the night before.
+Doctor: Are you checking every morning?
+Patient: Most mornings. Not every single day, but yeah, pretty often.
+Doctor: And you're still on metformin and glipizide?
+Patient: Yeah, metformin a thousand twice a day, and then the glipizide in the morning.
+Doctor: Taking them consistently?
+Patient: Mostly. I forget the nighttime metformin sometimes. Maybe once, twice a week.
+Doctor: Any low blood sugars? Shaky, sweaty, lightheaded?
+Patient: No, not really. If anything I feel the opposite, like thirsty all the time.
+Doctor: More urination too?
+Patient: Yeah, especially overnight, which is annoying.
+Doctor: How's your diet been?
+Patient: Bad. I'm on the road a lot, fast food, gas station stuff, you know.
+Doctor: Any numbness or tingling in the feet?
+Patient: A little tingling in my toes, yeah.
+Doctor: Vision changes?
+Patient: No, vision seems okay.
+Doctor: Do you remember your last A1c?
+Patient: I think it was 8 point something. 8.9 maybe?
+Doctor: Okay. We'll recheck labs and talk about adjusting the meds.
+Patient: Yeah, I figured.
+
+------------------------------------------------------------
+
+3. Asthma Flare During Allergy Season
+
+Doctor: So what's going on with your breathing?
+Patient: I've been wheezing a lot this week. Like way more than normal.
+Doctor: When did it start?
+Patient: Maybe five, six days ago? Around then.
+Doctor: Any shortness of breath?
+Patient: Yeah, especially stairs. I walked up to my apartment and had to stop for a sec.
+Doctor: Using your rescue inhaler?
+Patient: A ton. More than I should, probably. Four or five times a day.
+Doctor: What about your daily inhaler?
+Patient: Uh, I ran out. Like two weeks ago maybe.
+Doctor: Which one was that?
+Patient: Flovent.
+Doctor: Any nighttime symptoms?
+Patient: Yeah, I woke up coughing a couple times this week.
+Doctor: Fever? Chills?
+Patient: No fever. Little bit of runny nose though.
+Doctor: Any smoking or vaping?
+Patient: No.
+Doctor: What usually triggers your asthma?
+Patient: Pollen for sure. And whatever's in the air right now is awful.
+Doctor: Any hospitalizations recently for asthma?
+Patient: No, not since I was a kid.
+Doctor: Have you needed steroids in the last year?
+Patient: Last spring they gave me prednisone when I had a flare.
+Doctor: Okay, let's listen to your lungs and check your oxygen.
+Patient: Sounds good.
+
+------------------------------------------------------------
+
+4. UTI Symptoms
+
+Doctor: What can I help with today?
+Patient: I think I have another UTI.
+Doctor: What makes you think that?
+Patient: Burning when I pee, going all the time, that pressure feeling. Same as before.
+Doctor: How long?
+Patient: Since Saturday. Today's Wednesday, so four days.
+Doctor: Any fever?
+Patient: No.
+Doctor: Back pain?
+Patient: No back pain. Just kind of lower belly pressure.
+Doctor: Any blood in the urine?
+Patient: This morning it looked a little pink, not like a lot, just a little.
+Doctor: Nausea or vomiting?
+Patient: No.
+Doctor: Have you had these before?
+Patient: Yeah, a couple times. Not super often, but enough where I know what it feels like.
+Doctor: Allergies to antibiotics?
+Patient: Sulfa. They told me never to take sulfa meds again.
+Doctor: Any vaginal discharge or irritation?
+Patient: No.
+Doctor: Any chance you're pregnant?
+Patient: No.
+Doctor: Okay. We'll get a urine sample and check it.
+Patient: Okay.
+
+------------------------------------------------------------
+
+5. Knee Injury
+
+Doctor: What happened to the knee?
+Patient: I twisted it getting out of my truck. It sounds dumb, but I stepped weird and it just, like, shot pain right through it.
+Doctor: Which knee?
+Patient: The right one.
+Doctor: When was this?
+Patient: Three days ago.
+Doctor: Did you fall down?
+Patient: No, I caught myself.
+Doctor: Did you hear or feel a pop?
+Patient: I don't think I heard anything, maybe felt something weird, I don't know. It happened fast.
+Doctor: Has it been swollen?
+Patient: Yeah, that night it puffed up pretty good. It's a little better now but still swollen.
+Doctor: Are you able to walk?
+Patient: Yeah but I'm limping. If I turn wrong it kind of grabs.
+Doctor: Where's the pain exactly?
+Patient: More on the inside part.
+Doctor: Any locking, catching, or giving way?
+Patient: It feels kind of wobbly, like it might buckle.
+Doctor: What have you done for it?
+Patient: Ice, ibuprofen, and one of those cheap braces from CVS.
+Doctor: Any prior knee injuries?
+Patient: Not serious. Sprained it in high school playing football, but no surgery or anything.
+Doctor: Pain scale right now?
+Patient: Sitting here maybe a three. Walking, like a six.
+Doctor: Okay, let me examine it and we'll see if you need an X-ray or MRI.
+Patient: Alright.

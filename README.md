@@ -10,62 +10,23 @@ appointments.
 ## Architecture
 
 ```mermaid
-flowchart TD
-    User([Doctor / Workspace user])
-    Platform[Prompt Opinion Platform LLM<br/>orchestrator]
-    Gemini[(Google Gemini API<br/>gemini-2.5-flash)]
-    FHIR[(FHIR R4 server<br/>HAPI public / EHR)]
+flowchart LR
+    Doctor([Doctor])
+    LLM[Prompt Opinion<br/>Platform LLM]
 
-    User -->|"transcript • audio URL • patient query"| Platform
-    Platform -->|"Streamable HTTP /mcp<br/>+ SHARP headers<br/>(x-fhir-server-url,<br/> x-fhir-access-token,<br/> x-patient-id)"| Inst
-
-    subgraph MCP["mcp_app/ — MCP server (FastAPI, :8010)"]
-        direction TB
-        Inst["mcp_instance.py<br/>FastMCP + capability advertisement<br/>+ tool registration"]
-        Ctx["fhir_context.py<br/>resolves x-fhir-* headers / JWT claims"]
-        LLMmod["llm.py<br/>structured_completion · text_completion"]
-        Client["fhir_client.py<br/>bearer-token httpx client"]
-
-        ReadT["Read tools · 9<br/>FindPatient · GetPatient ·<br/>GetPatientHistory ·<br/>GetActiveConditions · GetMedications ·<br/>GetAllergies · GetRecentObservations ·<br/>GetEncounterHistory · GetImmunizations"]
-        AIT["AI tools · 3<br/>StructureAudioConversation<br/>StructureClinicalConversation<br/>SuggestDiagnosis"]
-        WriteT["Write tools · 7<br/>CreatePatient · UpdatePatientDemographics ·<br/>RecordObservation · AddCondition ·<br/>AddAllergy · ScheduleAppointment ·<br/>CommitEncounter"]
-
-        Inst --> ReadT
-        Inst --> AIT
-        Inst --> WriteT
-        Inst -.uses.-> Ctx
+    subgraph Server["MCP Server (mcp_app/)"]
+        Chart["Read &amp; Write tools · 16<br/>patient, vitals, conditions,<br/>meds, allergies, appointments"]
+        AI["AI tools · 3<br/>Transcriber → Structurer → Diagnoser"]
     end
 
-    subgraph Shared["shared/"]
-        direction TB
-        Tr["agents/transcriber.py<br/>audio bytes → transcript"]
-        St["agents/structurer.py<br/>transcript → StructuredEncounterPayload"]
-        Dx["agents/diagnoser.py<br/>encounter + history → DiagnosisSuggestion"]
-        Sch["fhir/schemas.py<br/>Pydantic models"]
-        Bd["fhir/bundle.py<br/>payload → FHIR R4 transaction Bundle"]
-    end
+    Gemini[(Google Gemini)]
+    FHIR[(FHIR R4 EHR)]
 
-    AIT -- "audio path" --> Tr
-    Tr -- "transcript" --> St
-    AIT -- "text path" --> St
-    AIT -- "diagnosis" --> Dx
-    AIT -. "SuggestDiagnosis: fetch history" .-> Client
-
-    WriteT -- "CommitEncounter" --> Bd
-
-    St --> Sch
-    Dx --> Sch
-    Bd --> Sch
-
-    Tr --> LLMmod
-    St --> LLMmod
-    Dx --> LLMmod
-
-    ReadT --> Client
-    WriteT --> Client
-
-    LLMmod -->|HTTPS| Gemini
-    Client -->|"FHIR R4 / HTTPS<br/>(per-request bearer token)"| FHIR
+    Doctor <-->|conversation| LLM
+    LLM <-->|MCP over HTTP| Server
+    AI -->|prompts| Gemini
+    Chart <-->|read / write| FHIR
+    AI -.history + commit.-> Chart
 ```
 
 ## Tools

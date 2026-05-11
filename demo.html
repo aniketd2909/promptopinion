@@ -157,10 +157,18 @@
         margin-bottom: 0;
       }
       .reveal h1 {
+        margin-top: 0;
         margin-bottom: 0.1em;
       }
+      .reveal .slides > section {
+        padding-top: 0 !important;
+      }
       .reveal .center {
+        margin-top: 0;
         margin-bottom: 0;
+      }
+      .reveal .center > *:first-child {
+        margin-top: 0;
       }
       .reveal .progress {
         color: var(--accent);
@@ -276,21 +284,25 @@
             </p>
           </div>
 
-          <h2 style="margin-top: 0.1em">The Problem — Documentation Burden</h2>
+          <h2 style="margin-top: 0.1em">
+            The Problem — Documentation Burden &amp; Diagnostic Load
+          </h2>
 
           <div class="stat-row">
             <div class="stat-card">
-              <span class="num">2 : 1</span>
+              <span class="num">5.8 / 8 hrs</span>
               <span class="label">
-                Hours of desk work for every hour spent with a patient — cited
-                as the <strong>leading cause of physician burnout</strong>.
+                Ambulatory physicians spend
+                <strong>~5.8 hours on the EHR</strong> for every 8 hours of
+                scheduled patient time.<sup>1</sup>
               </span>
             </div>
             <div class="stat-card">
-              <span class="num">35–50%</span>
+              <span class="num">62%</span>
               <span class="label">
-                of the average physician's workday is spent on EHR
-                documentation, not direct patient care.
+                of burnt-out physicians cite
+                <strong>bureaucratic workload &amp; EHR demands</strong> as the
+                top driver of burnout.<sup>2</sup>
               </span>
             </div>
           </div>
@@ -315,10 +327,6 @@
                 conversation, drafts a structured note for the doctor to review
                 &amp; sign
               </li>
-              <li>
-                <strong>Patient portals</strong> — digital intake forms feed
-                meds/history directly so doctors only verify, not retype
-              </li>
             </ul>
           </div>
 
@@ -332,6 +340,18 @@
             writes the approved encounter back as structured FHIR any EHR can
             ingest.
           </div>
+
+          <p class="footnote">
+            <sup>1</sup> AMA,
+            <em
+              >Five physician specialties that spend the most time in the
+              EHR</em
+            >
+            (2024), based on Epic data from 200,000+ physicians.
+            <sup>2</sup> Medscape
+            <em>Physician Burnout &amp; Depression Report</em> (2024–25); see
+            also Tebra <em>2025 Physician Burnout Survey</em>.
+          </p>
         </section>
 
         <!-- Slide 2: Solution -->
@@ -396,8 +416,10 @@
               src="architecture.png"
               alt="Architecture diagram"
               style="
-                max-width: 92%;
-                max-height: 62vh;
+                width: 100%;
+                max-width: 100%;
+                max-height: 80vh;
+                object-fit: fill;
                 border-radius: 8px;
                 box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
               " />
@@ -406,18 +428,18 @@
 
         <!-- Slide 4: Demo flow -->
         <section>
-          <h2>The Demo</h2>
+          <h2>Demo</h2>
           <h3>What we're feeding in — and what's powering the back end.</h3>
 
           <div class="two-col" style="margin-top: 0.8em">
             <div class="card">
               <h3>🎙️ Input — Audio</h3>
               <p>
-                Real doctor–patient consultation
+                Doctor–Patient consultation
                 <strong>audio recordings from a public Kaggle dataset</strong>.
-                No synthetic prompts — actual clinical conversations, complete
-                with small talk, interruptions, and accents, fed straight into
-                the transcriber agent.
+                — simulated clinical conversations, complete with small talk,
+                interruptions, and accents, fed straight into the transcriber
+                agent.
               </p>
             </div>
             <div class="card">
@@ -454,9 +476,11 @@
         progress: true,
         center: false,
         transition: "slide",
-        width: 1280,
-        height: 800,
-        margin: 0.06,
+        width: "80%",
+        height: "90%",
+        margin: 0.04,
+        minScale: 1,
+        maxScale: 1,
       });
     </script>
   </body>

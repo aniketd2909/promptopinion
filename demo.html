@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PromptOpinion Clinical Scribe — Demo</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css"
+      id="theme" />
+    <style>
+      :root {
+        --accent: #1f6feb;
+        --accent-soft: #e8f0fe;
+        --ink: #1a1a1a;
+        --muted: #555;
+      }
+      .reveal {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        color: var(--ink);
+      }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3 {
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        text-transform: none;
+      }
+      .reveal h1 {
+        font-size: 1.9em;
+        color: var(--ink);
+      }
+      .reveal h2 {
+        font-size: 1.25em;
+        color: var(--accent);
+        margin-bottom: 0.3em;
+      }
+      .reveal h3 {
+        font-size: 0.9em;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .reveal section {
+        text-align: left;
+      }
+      .reveal .center {
+        text-align: center;
+      }
+      .reveal ul {
+        list-style: none;
+        padding-left: 0;
+      }
+      .reveal ul li {
+        margin: 0.25em 0;
+        padding-left: 1.2em;
+        position: relative;
+        font-size: 0.72em;
+        line-height: 1.4;
+      }
+      .reveal ul li::before {
+        content: "›";
+        color: var(--accent);
+        font-weight: 700;
+        position: absolute;
+        left: 0;
+        top: -0.05em;
+        font-size: 1.2em;
+      }
+      .pill {
+        display: inline-block;
+        background: var(--accent-soft);
+        color: var(--accent);
+        padding: 0.15em 0.6em;
+        border-radius: 999px;
+        font-size: 0.45em;
+        font-weight: 600;
+        vertical-align: middle;
+        margin-left: 0.5em;
+        letter-spacing: 0.05em;
+      }
+      .stat {
+        background: var(--accent-soft);
+        border-left: 4px solid var(--accent);
+        padding: 0.6em 0.9em;
+        margin: 0.6em 0;
+        font-size: 0.75em;
+        border-radius: 6px;
+      }
+      .stat strong {
+        color: var(--accent);
+        font-size: 1.1em;
+      }
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.6em;
+        margin-top: 0.6em;
+      }
+      .card {
+        background: #f6f8fa;
+        border: 1px solid #e1e4e8;
+        border-radius: 10px;
+        padding: 1em 1.1em;
+      }
+      .card h3 {
+        margin: 0 0 0.4em 0;
+        color: var(--accent);
+        font-weight: 600;
+        font-size: 0.8em;
+      }
+      .card p {
+        font-size: 0.62em;
+        line-height: 1.45;
+        margin: 0;
+        color: var(--ink);
+      }
+      .flow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0.6em 0;
+        font-size: 0.55em;
+        color: var(--muted);
+      }
+      .flow .node {
+        background: white;
+        border: 2px solid var(--accent);
+        border-radius: 8px;
+        padding: 0.5em 0.7em;
+        color: var(--ink);
+        font-weight: 500;
+        text-align: center;
+      }
+      .flow .arrow {
+        color: var(--accent);
+        font-size: 1.4em;
+        font-weight: 700;
+      }
+      .footnote {
+        font-size: 0.45em;
+        color: var(--muted);
+        margin-top: 0.9em;
+        font-style: italic;
+      }
+      .tagline {
+        font-size: 0.85em;
+        color: var(--muted);
+        font-weight: 400;
+        margin-bottom: 0;
+      }
+      .reveal h1 {
+        margin-bottom: 0.1em;
+      }
+      .reveal .center {
+        margin-bottom: 0;
+      }
+      .reveal .progress {
+        color: var(--accent);
+      }
+      .step-list {
+        counter-reset: step;
+      }
+      .step-list li {
+        padding-left: 1.8em;
+        counter-increment: step;
+        font-size: 0.65em;
+        margin: 0.3em 0;
+      }
+      .step-list li::before {
+        content: counter(step);
+        background: var(--accent);
+        color: white;
+        width: 1.4em;
+        height: 1.4em;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75em;
+        font-weight: 700;
+        position: absolute;
+        left: 0;
+        top: 0.05em;
+      }
+      .stat-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8em;
+        margin: 0.6em 0 0.9em 0;
+      }
+      .stat-row .stat-card {
+        background: var(--accent-soft);
+        border-left: 4px solid var(--accent);
+        padding: 0.7em 1em;
+        border-radius: 6px;
+      }
+      .stat-row .stat-card .num {
+        color: var(--accent);
+        font-size: 1.2em;
+        font-weight: 700;
+        display: block;
+        line-height: 1.1;
+      }
+      .stat-row .stat-card .label {
+        font-size: 0.55em;
+        color: var(--ink);
+        line-height: 1.35;
+        display: block;
+        margin-top: 0.25em;
+      }
+      .landscape {
+        background: #f6f8fa;
+        border: 1px solid #e1e4e8;
+        border-radius: 8px;
+        padding: 0.7em 0.9em;
+        margin-top: 0.6em;
+      }
+      .landscape .ls-title {
+        font-size: 0.6em;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 600;
+        margin-bottom: 0.4em;
+      }
+      .landscape ul {
+        margin: 0;
+      }
+      .landscape ul li {
+        font-size: 0.6em;
+        margin: 0.18em 0;
+        padding-left: 1.1em;
+        line-height: 1.35;
+      }
+      .landscape ul li strong {
+        color: var(--accent);
+      }
+      .highlight-callout {
+        background: linear-gradient(135deg, var(--accent) 0%, #4a8bf0 100%);
+        color: white;
+        padding: 0.8em 1.1em;
+        border-radius: 8px;
+        margin-top: 0.7em;
+        font-size: 0.72em;
+        line-height: 1.5;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(31, 111, 235, 0.25);
+      }
+      .highlight-callout strong {
+        color: #fff;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.18);
+        padding: 0.05em 0.35em;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- Slide 1: Problem -->
+        <section>
+          <div class="center">
+            <h1>Suno Clinical Scribe</h1>
+            <p class="tagline">
+              Turning doctor–patient conversations into structured FHIR —
+              automatically.
+            </p>
+          </div>
+
+          <h2 style="margin-top: 0.1em">The Problem — Documentation Burden</h2>
+
+          <div class="stat-row">
+            <div class="stat-card">
+              <span class="num">2 : 1</span>
+              <span class="label">
+                Hours of desk work for every hour spent with a patient — cited
+                as the <strong>leading cause of physician burnout</strong>.
+              </span>
+            </div>
+            <div class="stat-card">
+              <span class="num">35–50%</span>
+              <span class="label">
+                of the average physician's workday is spent on EHR
+                documentation, not direct patient care.
+              </span>
+            </div>
+          </div>
+
+          <div class="landscape">
+            <div class="ls-title">How charts get filled in today</div>
+            <ul>
+              <li>
+                <strong>Manual entry</strong> — clicking checkboxes, dropdowns,
+                free-text narratives during &amp; after the visit
+              </li>
+              <li>
+                <strong>Human scribes</strong> — a second person in the room
+                doing data entry so the doctor can focus
+              </li>
+              <li>
+                <strong>Dictation</strong> (Nuance Dragon, etc.) —
+                speech-to-text of a post-visit summary
+              </li>
+              <li>
+                <strong>Ambient AI scribes</strong> — listens to the
+                conversation, drafts a structured note for the doctor to review
+                &amp; sign
+              </li>
+              <li>
+                <strong>Patient portals</strong> — digital intake forms feed
+                meds/history directly so doctors only verify, not retype
+              </li>
+            </ul>
+          </div>
+
+          <div class="highlight-callout">
+            Ambient AI scribes only solve <em>documentation</em>.
+            <strong>Suno goes further:</strong> as the doctor talks, it pulls
+            the patient's
+            <strong>prior history, meds &amp; allergies</strong> from the EHR
+            and surfaces a
+            <strong>live differential diagnosis with next steps</strong> — then
+            writes the approved encounter back as structured FHIR any EHR can
+            ingest.
+          </div>
+        </section>
+
+        <!-- Slide 2: Solution -->
+        <section>
+          <h2>The Solution <span class="pill">TWO INDEPENDENT TOOLS</span></h2>
+          <h3>
+            A conversational agent + a clinical MCP server. Useful together,
+            useful apart.
+          </h3>
+
+          <div class="flow">
+            <div class="node">Doctor +<br />Patient</div>
+            <div class="arrow">→</div>
+            <div class="node">Doctor's<br />Chat Agent</div>
+            <div class="arrow">→</div>
+            <div class="node">MCP Server<br />(integrated with Chat Agent)</div>
+            <div class="arrow">→</div>
+            <div class="node">FHIR R4<br />EHR</div>
+          </div>
+
+          <div class="two-col">
+            <div class="card">
+              <h3>① Doctor's Chat Agent</h3>
+              <p>
+                Conversational UI where the doctor pastes a transcript or
+                uploads audio. Thin, focused, human-in-the-loop. Works against
+                <em>any</em> MCP-compliant clinical backend — not locked in.
+              </p>
+            </div>
+            <div class="card">
+              <h3>② MCP Server</h3>
+              <p>
+                19 governed tools — <strong>9 FHIR read</strong>,
+                <strong>7 FHIR write</strong>, <strong>3 AI agents</strong>
+                (transcribe → structure → diagnose). Pluggable into Prompt
+                Opinion, Claude Desktop, or any MCP client.
+              </p>
+            </div>
+          </div>
+
+          <p class="footnote">
+            SHARP-on-MCP: the platform injects FHIR server URL + access token
+            per request, so the same code runs against any FHIR R4 EHR.
+          </p>
+        </section>
+
+        <!-- Slide 3: Architecture -->
+        <section>
+          <h2>Architecture</h2>
+          <h3>
+            Doctor → LLM → MCP Server → Gemini + FHIR EHR. One server, three AI
+            agents, sixteen governed tools.
+          </h3>
+          <div
+            style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              margin-top: 0.6em;
+            ">
+            <img
+              src="architecture.png"
+              alt="Architecture diagram"
+              style="
+                max-width: 92%;
+                max-height: 62vh;
+                border-radius: 8px;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+              " />
+          </div>
+        </section>
+
+        <!-- Slide 4: Demo flow -->
+        <section>
+          <h2>The Demo</h2>
+          <h3>What we're feeding in — and what's powering the back end.</h3>
+
+          <div class="two-col" style="margin-top: 0.8em">
+            <div class="card">
+              <h3>🎙️ Input — Audio</h3>
+              <p>
+                Real doctor–patient consultation
+                <strong>audio recordings from a public Kaggle dataset</strong>.
+                No synthetic prompts — actual clinical conversations, complete
+                with small talk, interruptions, and accents, fed straight into
+                the transcriber agent.
+              </p>
+            </div>
+            <div class="card">
+              <h3>🏥 Back end — FHIR</h3>
+              <p>
+                Live reads &amp; writes against the
+                <strong>public HAPI FHIR R4 test server</strong> —
+                <a
+                  href="https://hapi.fhir.org/baseR4/swagger-ui"
+                  style="color: var(--accent)"
+                  >hapi.fhir.org/baseR4</a
+                >. Every <code>GetPatient</code>, <code>SuggestDiagnosis</code>,
+                and <code>CommitEncounter</code> call is a real HTTP round-trip
+                to a hosted R4-compliant EHR.
+              </p>
+            </div>
+          </div>
+
+          <div class="highlight-callout" style="margin-top: 0.9em">
+            Nothing is mocked. You hear the audio →
+            <strong>watch the transcript form</strong> →
+            <strong>see the patient's real history pulled from HAPI</strong> →
+            <strong>see the encounter written back live</strong>.
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        controls: true,
+        progress: true,
+        center: false,
+        transition: "slide",
+        width: 1280,
+        height: 800,
+        margin: 0.06,
+      });
+    </script>
+  </body>
+</html>
